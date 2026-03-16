@@ -1,7 +1,5 @@
 const authService = require('../services/auth.service');
 const db = require('../models');
-const fs = require('fs');
-const path = require('path');
 
 const authController = {
   login: async (req, res) => {
@@ -37,29 +35,13 @@ const authController = {
         data = { company_name, website, address, size, industry, description };
       }
 
-      // Xử lý file upload VÀ xóa file cũ
+      // Xử lý file upload lên Cloudinary
       if (req.file) {
-        const newFileUrl = req.file.path.replace(/\\/g, "/"); 
-        
-        // Tìm profile cũ để lấy đường dẫn file cũ
         if (role === 'student') {
-          const oldProfile = await db.StudentProfile.findOne({ where: { user_id: userId } });
-          if (oldProfile && oldProfile.cv_url) {
-            // Xóa file cũ khỏi hệ thống
-            const oldFilePath = path.join(__dirname, '../../', oldProfile.cv_url);
-            if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
-          }
-          data.cv_url = newFileUrl;
+          data.cv_url = req.file.path; // Lấy thẳng URL từ Cloudinary
         } 
-        
         if (role === 'company') {
-          const oldProfile = await db.CompanyProfile.findOne({ where: { user_id: userId } });
-          if (oldProfile && oldProfile.logo_url) {
-            // Xóa logo cũ khỏi hệ thống
-            const oldFilePath = path.join(__dirname, '../../', oldProfile.logo_url);
-            if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
-          }
-          data.logo_url = newFileUrl;
+          data.logo_url = req.file.path;
         }
       }
 

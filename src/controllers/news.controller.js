@@ -1,6 +1,4 @@
 const newsService = require('../services/news.service');
-const fs = require('fs');
-const path = require('path');
 const db = require('../models');
 
 const newsController = {
@@ -37,7 +35,7 @@ const newsController = {
       const data = { title, content, author };
 
       if (req.file) {
-        data.cover_image = req.file.path.replace(/\\/g, "/");
+        data.cover_image = req.file.path; // Không cần xóa ảnh cũ local nữa
       }
 
       const news = await newsService.createNews(data);
@@ -58,16 +56,8 @@ const newsController = {
       const { title, content, author } = req.body;
       const data = { title, content, author };
 
-      // Xử lý nếu có upload ảnh mới
       if (req.file) {
-        data.cover_image = req.file.path.replace(/\\/g, "/");
-        
-        // Tìm ảnh cũ để xóa đi cho nhẹ server
-        const oldNews = await db.News.findByPk(id);
-        if (oldNews && oldNews.cover_image) {
-          const oldFilePath = path.join(__dirname, '../../', oldNews.cover_image);
-          if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
-        }
+        data.cover_image = req.file.path; // Không cần xóa ảnh cũ local nữa
       }
 
       // Lọc bỏ các trường undefined
@@ -88,12 +78,6 @@ const newsController = {
       }
 
       const id = req.params.id;
-      // Tìm bài viết để lấy đường dẫn ảnh và xóa file ảnh
-      const oldNews = await db.News.findByPk(id);
-      if (oldNews && oldNews.cover_image) {
-        const filePath = path.join(__dirname, '../../', oldNews.cover_image);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      }
 
       const result = await newsService.deleteNews(id);
       res.json(result);
