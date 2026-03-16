@@ -11,23 +11,23 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    // Trích xuất đuôi file (pdf, docx, jpg...)
+    // Trích xuất đuôi file để phân loại
     const ext = file.originalname.split('.').pop().toLowerCase();
     
-    // Nếu là file tài liệu (CV của sinh viên)
-    if (['pdf', 'doc', 'docx'].includes(ext)) {
+    // 1. Nếu là file Word (Bắt buộc phải tải về)
+    if (['doc', 'docx'].includes(ext)) {
       return {
         folder: 'uniconnect_uploads',
-        resource_type: 'raw', // BẮT BUỘC phải dùng 'raw' cho file tài liệu
+        resource_type: 'raw', 
         format: ext
       };
     }
     
-    // Nếu là hình ảnh (Logo, Ảnh bìa tin tức)
+    // 2. Nếu là PDF hoặc Ảnh (Cho phép xem trực tiếp trên trình duyệt)
     return {
       folder: 'uniconnect_uploads',
-      resource_type: 'auto',
-      allowed_formats: ['jpg', 'png', 'jpeg']
+      resource_type: 'auto', // Auto sẽ tự nhận diện PDF như một hình ảnh
+      allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'] 
     };
   },
 });
