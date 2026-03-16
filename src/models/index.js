@@ -4,7 +4,15 @@ const dbConfig = require("../config/db.config.js"); // <-- Import config
 // Khởi tạo kết nối với thông tin từ file config
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
+  port: process.env.DB_PORT || 3306,
   dialect: dbConfig.dialect,
+  // 👉 THÊM ĐOẠN NÀY: Bật SSL bắt buộc cho các dịch vụ Cloud như Aiven
+  dialectOptions: process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com') ? {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false // Bỏ qua xác thực chứng chỉ tự ký (phổ biến khi kết nối Cloud DB)
+    }
+  } : {},
   operatorsAliases: 0, // Tắt cảnh báo an toàn cũ của Sequelize
   logging: false, // Tắt log SQL nếu muốn console sạch sẽ
 
