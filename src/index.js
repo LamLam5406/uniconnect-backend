@@ -27,6 +27,30 @@ app.use('/api/auth', authRoute);
 app.use('/api/jobs', jobRoute);
 app.use('/api/admin', adminRoute);
 app.use('/api/news', newsRoute);
+// --- API BÍ MẬT ĐỂ DỌN DATA LỖI TRƯỚC KHI DEMO ---
+app.get('/api/fix-demo', async (req, res) => {
+  try {
+    const db = require('./models');
+    const { Op } = require('sequelize');
+    
+    // Tìm và XÓA tất cả các đơn ứng tuyển có link CV bị lỗi (không bắt đầu bằng http)
+    const deletedCount = await db.ApplyJob.destroy({
+      where: {
+        cv_snapshot: {
+          [Op.notLike]: 'http%' // Không giống link web
+        }
+      }
+    });
+
+    res.json({ 
+      message: "Đã dọn dẹp thành công!", 
+      deleted_records: deletedCount,
+      instruction: "Bây giờ Tùng Châu có thể nộp đơn lại vào Job #21 để bắt link CV mới nhé!" 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
