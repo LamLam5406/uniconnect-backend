@@ -197,6 +197,30 @@ const jobService = {
     application.status = status;
     await application.save();
     return application;
+  },
+
+  // Update 17/5
+  updateJob: async (id, data) => {
+    // 1. Thực thi câu lệnh SQL UPDATE
+    await db.Job.update(data, {
+      where: { id: id }
+    });
+    
+    // 2. Truy vấn lại để trả về bản ghi mới nhất sau khi cập nhật
+    return await db.Job.findByPk(id);
+  },
+
+  deleteJob: async (id) => {
+    // 1. Xóa tất cả các đơn ứng tuyển (ApplyJob) liên kết với công việc này trước
+    // Điều này ngăn chặn lỗi Foreign Key Constraint Violation từ cơ sở dữ liệu
+    await db.ApplyJob.destroy({
+      where: { job_id: id }
+    });
+
+    // 2. Thực thi câu lệnh SQL DELETE trên bảng Job
+    return await db.Job.destroy({
+      where: { id: id }
+    });
   }
 };
 

@@ -118,6 +118,59 @@ const jobController = {
     } catch (e) {
       res.status(400).json({ error: e.message });
     }
+  },
+
+  // Update 17/5
+  updateJob: async (req, res) => {
+    try {
+      if (req.user.role !== 'company') {
+        return res.status(403).json({ message: "Chỉ công ty mới được sửa tin tuyển dụng!" });
+      }
+      
+      const jobId = req.params.id;
+      const companyId = req.user.id;
+
+      // Kiểm tra quyền sở hữu công việc
+      const job = await jobService.getJobById(jobId);
+      if (!job) {
+        return res.status(404).json({ message: "Không tìm thấy công việc này." });
+      }
+      if (job.company_id !== companyId) {
+        return res.status(403).json({ message: "Bạn không có quyền sửa công việc của công ty khác!" });
+      }
+
+      // Xử lý cập nhật
+      const updatedJob = await jobService.updateJob(jobId, req.body);
+      res.json({ message: "Cập nhật thành công", job: updatedJob });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+
+  deleteJob: async (req, res) => {
+    try {
+      if (req.user.role !== 'company') {
+        return res.status(403).json({ message: "Chỉ công ty mới được xóa tin tuyển dụng!" });
+      }
+
+      const jobId = req.params.id;
+      const companyId = req.user.id;
+
+      // Kiểm tra quyền sở hữu công việc
+      const job = await jobService.getJobById(jobId);
+      if (!job) {
+        return res.status(404).json({ message: "Không tìm thấy công việc này." });
+      }
+      if (job.company_id !== companyId) {
+        return res.status(403).json({ message: "Bạn không có quyền xóa công việc của công ty khác!" });
+      }
+
+      // Xử lý xóa
+      await jobService.deleteJob(jobId);
+      res.json({ message: "Đã xóa công việc thành công!" });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
   }
 };
 
